@@ -1,66 +1,71 @@
 import { useMemo } from "react";
-import InfiniteScroll from "react-infinite-scroll-component"
+import InfiniteScroll from "react-infinite-scroll-component";
 import { useInfiniteQuery } from "@tanstack/react-query";
 
-import { Card } from "./components/Card"
+import { Card } from "./components/Card";
 
-import { ResponseAPI } from "./interface"
+import { ResponseAPI } from "./interface";
 import Loading from "./components/Loading";
-import './App.css'
+import "./App.css";
+import "./index.css";
 
-const fetcher = (page: number): Promise<ResponseAPI> => fetch(`https://rickandmortyapi.com/api/character/?page=${page}`).then(res => res.json())
+const fetcher = (page: number): Promise<ResponseAPI> =>
+  fetch(`http://localhost:8080/api/agents?page=${page}`).then((res) =>
+    res.json()
+  );
 
 const App = () => {
-
   const { data, error, fetchNextPage, status, hasNextPage } = useInfiniteQuery(
-        ['characters'],
+    ["characters"],
 
-        ({ pageParam = 1 }) => fetcher(pageParam),
+    ({ pageParam = 1 }) => fetcher(pageParam),
 
-        {
-            getNextPageParam: (lastPage: ResponseAPI) => {
+    {
+      getNextPageParam: (lastPage: ResponseAPI) => {
+        const previousPage = lastPage.info.prev
+          ? +lastPage.info.prev.split("=")[1]
+          : 0;
 
-                const previousPage = lastPage.info.prev ? +lastPage.info.prev.split('=')[1] : 0
+        const currentPage = previousPage + 1;
 
-                const currentPage = previousPage + 1;
+        if (currentPage === lastPage.info.pages) return false;
+        return currentPage + 1;
+      },
+    }
+  );
 
-                if (currentPage === lastPage.info.pages) return false;
-                return currentPage + 1;
-            }
-        }
-    )
-
-    const characters = useMemo(() => data?.pages.reduce((prev, page) => {
+  const characters = useMemo(
+    () =>
+      data?.pages.reduce((prev, page) => {
         return {
-            info: page.info,
-            results: [...prev.results, ...page.results]
-        }
-    }), [data])
+          info: page.info,
+          results: [...prev.results, ...page.results],
+        };
+      }),
+    [data]
+  );
 
-  if (status === 'loading') return <Loading />
+  if (status === "loading") return <Loading />;
 
-  if (status === 'error') return <h4>Ups!, {`${error}` as string}</h4>
-
+  if (status === "error") return <h4>Ups!, {`${error}` as string}</h4>;
 
   return (
     <div>
       <h1 className="title">React Infinite Scroll</h1>
-
       <InfiniteScroll
         dataLength={characters ? characters.results.length : 0}
         next={() => fetchNextPage()}
         hasMore={!!hasNextPage}
         loader={<Loading />}
       >
-        <div className="grid-container">
-          {
-            characters && characters.results.map(character => (
+        <div className="flex flex-wrap">
+          {characters &&
+            characters.results.map((character) => (
               <Card key={character.id} character={character} />
-            ))
-          }
+            ))}
         </div>
       </InfiniteScroll>
     </div>
-  )
-}
-export default App
+  );
+};
+export default App;

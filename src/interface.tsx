@@ -12,6 +12,9 @@ export interface Info {
 
 export interface Result {
     id: number;
-    name: string;
-    image: string;
+    fullName: string;
+    img: string;
+    description: string;
+    averageRating: number
+    jobs : string[];
 }
