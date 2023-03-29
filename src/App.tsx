@@ -8,6 +8,7 @@ import { ResponseAPI } from "./interface";
 import Loading from "./components/Loading";
 import "./App.css";
 import "./index.css";
+import Login from "./components/Login/Login";
 
 const fetcher = (page: number): Promise<ResponseAPI> =>
   fetch(`http://localhost:8080/api/agents?page=${page}`).then((res) =>
